@@ -45,7 +45,10 @@ export class DropDownSelector<T> {
 				}
 			}).setType(ButtonType.Dropdown).setSelected(() => this.selectedValue() === item.value))
 		}, (dropdownWidth) ? dropdownWidth : undefined)
-		this._field._injectionsRight = () => [m(itemChooser)]
+
+		if (items.length > 1) {
+			this._field._injectionsRight = () => [m(itemChooser)]
+		}
 
 		this.view = () => {
 			return m(this._field)

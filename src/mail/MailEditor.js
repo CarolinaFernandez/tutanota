@@ -164,6 +164,7 @@ export class MailEditor {
 				value: mailAddress
 			})), stream(getDefaultSender(this._mailboxDetails)), 250)
 
+		let numberOfAliases = getEnabledMailAddresses(this._mailboxDetails).length
 		let sortedLanguages = languages.slice().sort((a, b) => lang.get(a.textId).localeCompare(lang.get(b.textId)))
 		this._selectedNotificationLanguage = stream(getAvailableLanguageCode(props.notificationMailLanguage || lang.code))
 
@@ -300,15 +301,15 @@ export class MailEditor {
 					}
 				}
 			}, [
-				m(this.toRecipients),
+				// Show the sender addresses here in case the sender has multiple accounts and/or aliases
+				this._displayEnabledEmailAddresses(numberOfAliases > 1, sortedLanguages),
+				m(".row", m(this.toRecipients)),
 				m(ExpanderPanelN, {expanded: detailsExpanded},
 					m(".details", [
 						m(this.ccRecipients),
 						m(this.bccRecipients),
-						m(".wrapping-row", [
-							m(this._senderField),
-							this._languageDropDown(sortedLanguages)
-						]),
+						// Only show the sender address here in case the sender has just one account, no aliases
+						this._displayEnabledEmailAddresses(numberOfAliases == 1, sortedLanguages),
 					])
 				),
 				this._confidentialButtonState
@@ -397,6 +398,15 @@ export class MailEditor {
 				             customerProperties.notificationMailTemplates.find((nmt) => nmt.language === sL.code))
 		             })
 		             .catch(() => [])
+	}
+
+	_displayEnabledEmailAddresses(aliasesCondition: boolean, sortedLanguages: Array<Language>) {
+		return (aliasesCondition) ?
+                                        m(".wrapping-row", [
+                                                m(this._senderField),
+                                                this._languageDropDown(sortedLanguages),
+                                        ])
+                                : null
 	}
 
 	_focusBodyOnLoad() {
